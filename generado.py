@@ -114,17 +114,21 @@ config_button.pack(pady=10, anchor="center")
 sorteo_frame = ctk.CTkFrame(root, fg_color=("white", "lightgrey"))
 sorteo_frame.pack(pady=10, padx=10, fill="x")
 
+# Crear un frame para el botón Sortear a la izquierda
+left_frame = ctk.CTkFrame(sorteo_frame)
+left_frame.pack(side="left", padx=20)
+
 # Botón "Sort"
-sort_button = ctk.CTkButton(sorteo_frame, text="SORT", font=("Arial", 12), width=50, height=50, corner_radius=25,
+sort_button = ctk.CTkButton(left_frame, text="SORT", font=("Arial", 12), width=50, height=50, corner_radius=25,
                             command=sortear)
-sort_button.grid(row=0, column=0, padx=10, pady=10)
+sort_button.pack(pady=10)
 
 # Números sorteados (como botones circulares)
 for i in range(7):
     numero_button = ctk.CTkButton(sorteo_frame, text="", font=("Arial", 18, "bold"),  # Texto inicial vacío
                                   width=50, height=50, fg_color="lightgrey", text_color="black",  # Fondo inicial gris
                                   corner_radius=25)
-    numero_button.grid(row=0, column=i + 1, padx=5, pady=5)
+    numero_button.pack(side="left", padx=5, pady=5)
     botones.append(numero_button)
 
 # Ejecutar aplicación

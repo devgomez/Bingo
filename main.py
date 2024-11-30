@@ -68,7 +68,7 @@ frame_derecho_nombre.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)
 contenedor_centrado = ctk.CTkFrame(frame_derecho_nombre, fg_color="transparent")
 contenedor_centrado.pack(expand=True, fill="both",pady="50")
 
-nombre_entry_yape = ctk.CTkEntry(
+numero_entry_yape = ctk.CTkEntry(
     contenedor_centrado,
     placeholder_text="927 881 708",
     justify="center",
@@ -77,7 +77,8 @@ nombre_entry_yape = ctk.CTkEntry(
     fg_color="transparent",
     width=300
 )
-nombre_entry_yape.pack(pady=0)  # Sin espacio vertical entre los campos
+numero_entry_yape.pack(pady=0)
+numero_entry_yape.insert(0,"986 487 914")
 
 nombre_entry_yape = ctk.CTkEntry(
     contenedor_centrado,
@@ -88,6 +89,7 @@ nombre_entry_yape = ctk.CTkEntry(
     fg_color="transparent"
 )
 nombre_entry_yape.pack(pady=0) 
+nombre_entry_yape.insert(0,'Elda M. Rebaza')
 # fin frame nombre yape
 
 
@@ -97,14 +99,20 @@ nombre_entry_yape.pack(pady=0)
 
 
 #inicio frame precio
+# Frame principal derecho que ocupa la mitad derecha del frame_medio
 frame_derecho_precio = ctk.CTkFrame(frame_medio, fg_color="transparent")
 frame_derecho_precio.place(relx=0.5, rely=0, relwidth=0.5, relheight=1)  # Ocupa la mitad derecha
 
-contenedor_centrado_precio = ctk.CTkFrame(frame_derecho_precio,height=80,fg_color="transparent")
-contenedor_centrado_precio.pack( fill="both",pady="20")
+# Contenedor izquierdo (amarillo)
+contenedor_izquierdo_precio = ctk.CTkFrame(frame_derecho_precio, width=100, height=40, fg_color="transparent")
+contenedor_izquierdo_precio.place(relx=0.25, rely=0.5, anchor="center")  # Centrado verticalmente y desplazado hacia la izquierda
+
+# Contenedor derecho (azul)
+contenedor_derecho_info = ctk.CTkFrame(frame_derecho_precio, width=150, height=40, fg_color="transparent")
+contenedor_derecho_info.place(relx=0.75, rely=0.5, anchor="center") 
 
 nombre_entry_yape = ctk.CTkEntry(
-    contenedor_centrado_precio,
+    contenedor_izquierdo_precio,
     placeholder_text="S/ 2.00",
     justify="center",
     font=("Helvetica", 36, "bold"),
@@ -117,6 +125,15 @@ nombre_entry_yape = ctk.CTkEntry(
 nombre_entry_yape.insert(0,"S/ 1.00")
 nombre_entry_yape.pack(pady=0)  # Sin espacio vertical entre los campos
 
+
+label_info = ctk.CTkLabel(
+    master=contenedor_derecho_info,  # Cambia 'frame_superior' por el contenedor que prefieras
+    text="Ocupados: 0 | Disponibles: 0",  # Texto inicial
+    font=("Georgia", 14, "bold"),  # Fuente personalizada
+    fg_color="transparent",  # Color de fondo del Label
+    text_color="#000000"  # Color del texto
+)
+label_info.pack(pady=10) 
 
 def configurar():
     global popup_instance
@@ -165,10 +182,12 @@ def configurar():
             cuadros = int(cuadros_entry.get())  # Convertir a int
             circulos = int(circulos_entry.get())  # Convertir a int
             #precio = int(precio_entry.get())  # Convertir a int
-            resetear()
+            resetear_sorteo()
+            resetear_frame_inferior()
             global numero_random_maximo
             numero_random_maximo = cuadros
             crear_cuadros(cuadros, circulos)
+            actualizar_label_info()
             popup_instance.destroy()  # Cerrar el popup
         except ValueError:
             # Mostrar error si no se puede convertir
@@ -192,8 +211,89 @@ def configurar():
     popup_instance.grab_set()  # Bloquear interacción con la ventana principal
     popup_instance.wait_window() 
 
+botones_circulos = []
+def crear_cuadros(cantidad_cuadros, cantidad_circulos):
+
+    for i in range(cantidad_cuadros):
+        cuadro = ctk.CTkFrame(
+            frame_inferior,
+            corner_radius=10,
+            fg_color="#ffbf4f",
+            border_width=1,  # Establecer el grosor del borde
+            border_color="black"  # Establecer el color del borde
+        )
+        cuadro.grid(row=i // 8, column=i % 8, padx=2, pady=2)
+
+        # Sección 1: Nombre del jugador y selección de color
+        frame_nombre = ctk.CTkFrame(cuadro, corner_radius=0,fg_color="#ffbf4f")
+        frame_nombre.pack(fill="x", pady=3,padx=5)
+
+        nombre_entry = ctk.CTkEntry(frame_nombre, placeholder_text="...",justify="center",fg_color="#ffbf4f",font=("Georgia", 14,"bold"), border_width=0, width=100)
+        nombre_entry.pack(fill="x",padx=0)
+
+        nombre_entry.bind("<Button-3>", cambiar_color)
+        nombre_entry.bind("<KeyRelease>", lambda event: actualizar_label_info())
+
+        # Sección 2: Número de orden del cuadro
+        frame_numero = ctk.CTkFrame(cuadro, corner_radius=0,fg_color="#ffbf4f")
+        frame_numero.pack(fill="x", pady=0,padx=5)
+
+        label_numero = ctk.CTkLabel(frame_numero, text=str(i + 1), font=("Georgia", 36,"bold"))
+        label_numero.pack(fill="x", pady=0,padx=5)
+
+        # Sección 3: Círculos
+        frame_circulos = ctk.CTkFrame(cuadro, corner_radius=0,fg_color="#ffbf4f")
+        frame_circulos.pack(fill="x", pady=3,padx=5)
+
+        # Generar los círculos
+        for j in range(cantidad_circulos):
+            # Crear un círculo por cada cantidad de círculos solicitada
+            def crear_boton_circulo(circulo_idx, cuadro=cuadro):
+                btn_circulo = ctk.CTkButton(frame_circulos, text="",hover_color="#d2eb99", width=20, height=20, corner_radius=50, fg_color="white",border_width=2,border_color="black",
+                                            command=lambda: cambiar_color_circulo(btn_circulo))
+                btn_circulo.pack(side="left", padx=3)
+                botones_circulos.append(btn_circulo)
+            crear_boton_circulo(j)
+
+def contar_cuadros_sin_nombre():
+    cuadros_sin_nombre = 0
+    
+    for cuadro in frame_inferior.winfo_children():  # Iterar sobre todos los cuadros en el frame_inferior
+        for child in cuadro.winfo_children():  # Buscar dentro de cada cuadro
+            if isinstance(child, ctk.CTkFrame):  # Encontrar el frame_nombre
+                for sub_child in child.winfo_children():
+                    if isinstance(sub_child, ctk.CTkEntry):  # Buscar el campo nombre_entry
+                        if sub_child.get().strip() == "":  # Verificar si está vacío
+                            cuadros_sin_nombre += 1  # Incrementar el contador si está vacío
+                        break  # Detenerse al encontrar el primer nombre_entry en el cuadro
+    return cuadros_sin_nombre
+
+def contar_cuadros_con_nombre():
+    cuadros_con_nombre = 0
+    
+    for cuadro in frame_inferior.winfo_children():  # Iterar sobre todos los cuadros en el frame_inferior
+        for child in cuadro.winfo_children():  # Buscar dentro de cada cuadro
+            if isinstance(child, ctk.CTkFrame):  # Encontrar el frame_nombre
+                for sub_child in child.winfo_children():
+                    if isinstance(sub_child, ctk.CTkEntry):  # Buscar el campo nombre_entry
+                        if sub_child.get().strip() != "":  # Verificar si no está vacío
+                            cuadros_con_nombre += 1  # Incrementar el contador si no está vacío
+                        break  # Detenerse al encontrar el primer nombre_entry en el cuadro
+    return cuadros_con_nombre
+
+def actualizar_label_info():
+    cuadros_con_nombre = contar_cuadros_con_nombre()
+    cuadros_sin_nombre = contar_cuadros_sin_nombre()
+    texto = f"Ocupados: {cuadros_con_nombre} | Disponibles: {cuadros_sin_nombre}"
+    label_info.configure(text=texto)
+
+def reset_intentos():
+    resetear_sorteo()
+    for boton in botones_circulos:
+        boton.configure(fg_color="white")
+
 nombre_boton_yape = ctk.CTkButton(
-    contenedor_centrado_precio,
+    contenedor_izquierdo_precio,
     text="Configurar",  # El texto que aparecerá en el botón
     font=("Helvetica", 12, "bold"),  # Fuente y estilo
     border_width=2,
@@ -204,30 +304,22 @@ nombre_boton_yape = ctk.CTkButton(
 )
 nombre_boton_yape.pack(pady=5)
 
+nombre_boton_limpiar = ctk.CTkButton(
+    contenedor_izquierdo_precio,
+    text="Limpiar",  # El texto que aparecerá en el botón
+    font=("Helvetica", 12, "bold"),  # Fuente y estilo
+    border_width=2,
+    #fg_color="blue",  # Color de fondo
+    width=100,  # Ancho del botón
+    height=30,  # Altura del botón
+    command=reset_intentos
+)
+nombre_boton_limpiar.pack(pady=5)
+
+
+
+
  #fin frame precio
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -243,10 +335,12 @@ numeros = []  # Los círculos estarán vacíos inicialmente
 circulos = [] 
 etiquetas = []
 
-def resetear():
+def resetear_sorteo():
     global numeros  # Acceder a la lista global
     numeros = []  # Vaciar la lista de números
     actualizar_numeros()
+
+def resetear_frame_inferior():
     limpiar_frame(frame_inferior)
 
 def actualizar_numeros():
@@ -268,6 +362,21 @@ def sortear():
     if len(numeros) > 50:  # Mantener solo los últimos 10 números
         numeros.pop()
     actualizar_numeros()
+    # Pintar un círculo verde en el cuadro correspondiente al número sorteado
+    for cuadro in frame_inferior.winfo_children():  # Iterar sobre todos los cuadros
+        # Buscar el número en la etiqueta de este cuadro
+        for child in cuadro.winfo_children():
+            if isinstance(child, ctk.CTkFrame):  # Buscar la sección que contiene el número
+                for sub_child in child.winfo_children():
+                    if isinstance(sub_child, ctk.CTkLabel):
+                        if sub_child.cget("text") == str(nuevo_numero):  # Si el número coincide
+                            # Pintar solo el primer botón blanco dentro del contenedor de círculos
+                            for circulo in cuadro.winfo_children():
+                                if isinstance(circulo, ctk.CTkFrame):  # Encontrar el contenedor de círculos
+                                    for boton in circulo.winfo_children():
+                                        if isinstance(boton, ctk.CTkButton) and boton.cget("fg_color") == "white":
+                                            boton.configure(fg_color="green")  # Pintar de verde
+                                            return
 
 sort_button = ctk.CTkButton(frame_sortear, text="", font=("Arial", 12), width=50, height=50, corner_radius=25,
                             command=sortear)
@@ -291,59 +400,12 @@ for i in range(50):
 
 
 
-
-
-
-
 def cambiar_color(event):
     """Abre una paleta de colores y cambia el color del componente en que se hizo doble clic."""
     widget = event.widget
     color = askcolor(title="Selecciona un color")[1]
     if color:
         widget.configure(bg=color)
-# Función para crear los cuadros
-def crear_cuadros(cantidad_cuadros, cantidad_circulos):
-
-    for i in range(cantidad_cuadros):
-        cuadro = ctk.CTkFrame(
-            frame_inferior,
-            corner_radius=10,
-            fg_color="#ffbf4f",
-            border_width=1,  # Establecer el grosor del borde
-            border_color="black"  # Establecer el color del borde
-        )
-        cuadro.grid(row=i // 8, column=i % 8, padx=2, pady=2)
-
-        # Sección 1: Nombre del jugador y selección de color
-        frame_nombre = ctk.CTkFrame(cuadro, corner_radius=0,fg_color="#ffbf4f")
-        frame_nombre.pack(fill="x", pady=3,padx=5)
-
-        nombre_entry = ctk.CTkEntry(frame_nombre, placeholder_text="...",justify="center",fg_color="#ffbf4f",font=("Georgia", 14,"bold"), border_width=0, width=100)
-        nombre_entry.pack(fill="x",padx=0)
-
-        nombre_entry.bind("<Button-3>", cambiar_color)
-
-        # Sección 2: Número de orden del cuadro
-        frame_numero = ctk.CTkFrame(cuadro, corner_radius=0,fg_color="#ffbf4f")
-        frame_numero.pack(fill="x", pady=0,padx=5)
-
-        label_numero = ctk.CTkLabel(frame_numero, text=str(i + 1), font=("Georgia", 36,"bold"))
-        label_numero.pack(fill="x", pady=0,padx=5)
-
-        # Sección 3: Círculos
-        frame_circulos = ctk.CTkFrame(cuadro, corner_radius=0,fg_color="#ffbf4f")
-        frame_circulos.pack(fill="x", pady=3,padx=5)
-
-        # Generar los círculos
-        for j in range(cantidad_circulos):
-            # Crear un círculo por cada cantidad de círculos solicitada
-            def crear_boton_circulo(circulo_idx, cuadro=cuadro):
-                btn_circulo = ctk.CTkButton(frame_circulos, text="",hover_color="#d2eb99", width=20, height=20, corner_radius=50, fg_color="white",border_width=2,border_color="black",
-                                            command=lambda: cambiar_color_circulo(btn_circulo))
-                btn_circulo.pack(side="left", padx=3)
-
-            crear_boton_circulo(j)
-
 
 # Cambiar color de un círculo
 def cambiar_color_circulo(btn):
@@ -363,21 +425,8 @@ def toggle_frame(frame):
         frame.pack(fill="both", expand=True)
 
 
-
-
-
-
-
-
-
-
-
-
-
 frame_inferior = ctk.CTkFrame(app, corner_radius=0,fg_color="transparent")
 frame_inferior.pack(fill="both", padx="5", pady="5", expand=True)
-
-
 
 
 app.mainloop()
